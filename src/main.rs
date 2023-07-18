@@ -18,7 +18,7 @@ use hittable::{HitRecord, Hittable};
 use hittable_list::HittableList;
 use ray::*;
 use sphere::Sphere;
-use util::random_double;
+use util::*;
 use vec3::*;
 
 fn ray_colour(r: &Ray, world: &impl Hittable, depth: usize) -> Colour {
@@ -33,18 +33,6 @@ fn ray_colour(r: &Ray, world: &impl Hittable, depth: usize) -> Colour {
     let unit_direction = unit_vector(&r.direction());
     let t = 0.5 * (unit_direction.y() + 1.0);
     (1.0 - t) * Colour::new(1.0, 1.0, 1.0) + t * Colour::new(0.5, 0.7, 1.0)
-}
-
-fn throbber(x: usize) -> &'static str {
-    match x % 6 {
-        0 => "  .",
-        1 => " ..",
-        2 => "...",
-        3 => ".. ",
-        4 => ".  ",
-        5 => "   ",
-        _ => unreachable!()
-    }
 }
 
 fn main() {

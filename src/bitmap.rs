@@ -12,27 +12,18 @@ impl Bitmap {
         self.data.push(rgb);
     }
 
-    pub fn output(&self, mut out_stream: impl Write) -> std::io::Result<()> {
-        let row_length = ((self.width * 24 + 31) / 32) * 4;
-        let pad_bytes = (self.width * 3) % 4;
-        let padding = vec![0; pad_bytes];
-
-        let nrow = (self.data.len() as f32 / self.width as f32).ceil() as usize;
-        let bytes_len = (nrow * row_length) as i32;
-        let size = &(bytes_len + 54 as i32).to_le_bytes();
-
-        let w = (self.width as i32).to_le_bytes();
-        let h = (-(((self.data.len()) / self.width) as i32)).to_le_bytes(); 
-        let bytes_len = bytes_len.to_le_bytes();
-
-        let header: Vec<u8> = vec![
+    fn generate_header(&self, img_size: i32, img_width: i32, img_height: i32) -> [u8; 54] {
+        let s = img_size.to_le_bytes();
+        let w = img_width.to_le_bytes();
+        let h = (-img_height).to_le_bytes();
+        let t = (img_size + 54).to_le_bytes();
+        [
             // File Header:
             0x42, 0x4D,             // Header Field (BM)
-            size[0], size[1], size[2], size[3], // Size of BMP File (in bytes)
+            t[0], t[1], t[2], t[3], // Size of BMP File (in bytes)
             0x00, 0x00,             // Reserved; zeroed.
             0x00, 0x00,             // Reserved; zeroed.
             0x36, 0x00, 0x00, 0x00, // Offset - start address of pixel array. (14 + 40)
-
             // Windows BITMAPINFO Header:
             0x28, 0x00, 0x00, 0x00, // Size of header
             w[0], w[1], w[2], w[3], // Width of image (in pixels)
@@ -40,24 +31,29 @@ impl Bitmap {
             0x01, 0x00,             // Number of Colour Planes
             0x18, 0x00,             // Number of bits per pixel (24, 8 per channel)
             0x00, 0x00, 0x00, 0x00, // Compression Method (None)
-            bytes_len[0], bytes_len[1], bytes_len[2], bytes_len[3], // Image Size.
+            s[0], s[1], s[2], s[3], // Image Size.
             0x13, 0x0B, 0x00, 0x00, // Horizontal resolution (pixels-per-metre)
             0x13, 0x0B, 0x00, 0x00, // Vertical resolution (pixels-per-metre)
             0x00, 0x00, 0x00, 0x00, // Number of colours in palette (0 defaults to 2^n)
             0x00, 0x00, 0x00, 0x00  // Important colours used - ignored.
-        ];
+        ]
+    }
+
+    pub fn output(&self, mut out_stream: impl Write) -> std::io::Result<()> {
+        let padding = vec![0; (self.width * 3) % 4];
+        let row_length = (self.width * 3 + padding.len()) as i32;
+        let nrow = (self.data.len() / self.width) as i32;
         
         // Write Header:
+        let header = self.generate_header(nrow * row_length, self.width as i32, nrow);
         out_stream.write_all(&header)?;
-
         // Write pixel array, row by row:
-        for pixel in self.data.chunks(self.width) {
-            for &[r, g, b] in pixel {
+        for pixels in self.data.chunks(self.width) {
+            for &[r, g, b] in pixels {
                 out_stream.write_all(&[b, g, r])?;
             }
             out_stream.write_all(&padding)?;
         }
-
         Ok(())
     }
 }

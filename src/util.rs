@@ -10,3 +10,15 @@ pub fn degrees_to_radians(deg: f32) -> f32 {
 pub fn random_double(min: f32, max: f32) -> f32 {
     min + (max - min) * fastrand::Rng::new().f32()
 }
+
+pub fn throbber(x: usize) -> &'static str {
+    match x % 6 {
+        0 => "  .",
+        1 => " ..",
+        2 => "...",
+        3 => ".. ",
+        4 => ".  ",
+        5 => "   ",
+        _ => unreachable!()
+    }
+}
