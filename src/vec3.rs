@@ -1,5 +1,7 @@
 use std::ops;
 
+use crate::util::random_double;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Vec3([f32; 3]);
 
@@ -18,6 +20,10 @@ impl Vec3 {
     pub fn length(&self) -> f32 { self.length_squared().sqrt() }
     pub fn length_squared(&self) -> f32 {
         self[0] * self[0] + self[1] * self[1] + self[2] * self[2]
+    }
+
+    pub fn random(min: f32, max: f32) -> Self {
+        Vec3::new(random_double(min, max), random_double(min, max), random_double(min, max))
     }
 }
 
@@ -126,4 +132,11 @@ pub fn cross(u: &Vec3, v: &Vec3) -> Vec3 {
 
 pub fn unit_vector(v: &Vec3) -> Vec3 {
     *v / v.length()
+}
+
+pub fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let p = Vec3::random(-1.0, 1.0);
+        if p.length_squared() < 1.0 { return p; }
+    }
 }

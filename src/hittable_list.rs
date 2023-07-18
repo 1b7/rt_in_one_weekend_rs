@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{hittable::*, vec3::Vec3};
+use crate::hittable::*;
 
 pub struct HittableList {
     objects: Vec<Rc<dyn Hittable>>

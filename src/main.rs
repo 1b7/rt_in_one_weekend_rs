@@ -1,14 +1,17 @@
-mod vec3;
-mod colour;
-mod ray;
-mod hittable;
-mod sphere;
-mod hittable_list;
-mod util;
+mod bitmap;
 mod camera;
+mod colour;
+mod hittable;
+mod hittable_list;
+mod ray;
+mod sphere;
+mod util;
+mod vec3;
 
+use std::env::args;
 use std::rc::Rc;
 
+use bitmap::*;
 use camera::Camera;
 use colour::*;
 use hittable::{HitRecord, Hittable};
@@ -18,27 +21,18 @@ use sphere::Sphere;
 use util::random_double;
 use vec3::*;
 
-fn ray_colour(r: &Ray, world: &impl Hittable) -> Colour {
+fn ray_colour(r: &Ray, world: &impl Hittable, depth: usize) -> Colour {
     let mut rec = HitRecord::default();
+
+    if depth == 0 { return Colour::new(0.0, 0.0, 0.0) }
+
     if world.hit(r, 0.0, f32::INFINITY, &mut rec) {
-        return 0.5 * (rec.normal + Colour::new(1.0, 1.0, 1.0))
+        let target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5 * ray_colour(&Ray::new(rec.p, target - rec.p), world, depth - 1)
     }
     let unit_direction = unit_vector(&r.direction());
     let t = 0.5 * (unit_direction.y() + 1.0);
     (1.0 - t) * Colour::new(1.0, 1.0, 1.0) + t * Colour::new(0.5, 0.7, 1.0)
-}
-
-fn hit_sphere(centre: &Point3, radius: f32, r: &Ray) -> f32 {
-    let oc = r.origin() - *centre;
-    let a = r.direction().length_squared();
-    let half_b = dot(&oc, &r.direction());
-    let c = oc.length_squared() - radius * radius;
-    let discriminant = half_b * half_b - a * c;
-    if discriminant < 0.0 {
-        -1.0
-    } else {
-        (-half_b - discriminant.sqrt()) / a
-    }
 }
 
 fn throbber(x: usize) -> &'static str {
@@ -54,11 +48,18 @@ fn throbber(x: usize) -> &'static str {
 }
 
 fn main() {
+    let file_path = if let Some(fp) = args().nth(1) {
+        fp
+    } else { panic!("Must provide a path for output.") };
+
     // Image
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let image_height = (image_width as f32 / aspect_ratio) as i32;
     let samples_per_pixel = 100;
+    let max_depth = 50;
+
+    let mut bmp = Bitmap::new(vec![], image_width);
 
     // World
     let mut world = HittableList::new(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
@@ -68,8 +69,6 @@ fn main() {
     let cam = Camera::new();
 
     // Render
-    println!("P3\n{} {}\n255", image_width, image_height);
-
     for j in (0..image_height).rev() {
         eprint!("\rScanlines Remaining:\t{:03} {}", j, throbber(j as usize));
         for i in 0..image_width {
@@ -78,11 +77,17 @@ fn main() {
                 let u = (i as f32 + random_double(0.0, 1.0)) / (image_width - 1) as f32;
                 let v = (j as f32 + random_double(0.0, 1.0)) / (image_height - 1) as f32;
                 let r = cam.get_ray(u, v);
-                pixel_colour += ray_colour(&r, &world);
+                pixel_colour += ray_colour(&r, &world, max_depth);
             }
 
-            write_colour(&pixel_colour, samples_per_pixel);
+            bmp.push_pixel(col_as_rgb(&pixel_colour, samples_per_pixel));
         }
     }
+
     eprintln!("\nDone");
+    
+    let out_file = std::fs::File::create(&file_path).unwrap();
+    bmp.output(out_file).unwrap();
+
+    eprintln!("Image written to: {}", file_path);
 }
