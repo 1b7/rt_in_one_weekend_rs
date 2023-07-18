@@ -8,6 +8,5 @@ pub fn degrees_to_radians(deg: f32) -> f32 {
 
 /// Returns a random double in the range from `min` up to, but **not including**, `max`.
 pub fn random_double(min: f32, max: f32) -> f32 {
-    let mut rng = rand::thread_rng();
-    rand::Rng::gen_range(&mut rng, min..max)
+    min + (max - min) * fastrand::Rng::new().f32()
 }

@@ -70,7 +70,7 @@ fn main() {
 
     // Render
     for j in (0..image_height).rev() {
-        eprint!("\rScanlines Remaining:\t{:03} {}", j, throbber(j as usize));
+        eprint!("\rRendering Scanline {} of {} {}", image_height - j, image_height, throbber(j as usize));
         for i in 0..image_width {
             let mut pixel_colour = Colour::default();
             for _ in 0..samples_per_pixel {
@@ -84,7 +84,7 @@ fn main() {
         }
     }
 
-    eprintln!("\nDone");
+    eprintln!("Done!");
     
     let out_file = std::fs::File::create(&file_path).unwrap();
     bmp.output(out_file).unwrap();
