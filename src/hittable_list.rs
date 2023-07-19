@@ -1,17 +1,18 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::hittable::*;
 
+#[derive(Clone)]
 pub struct HittableList {
-    objects: Vec<Rc<dyn Hittable>>
+    objects: Vec<Arc<dyn Hittable>>
 }
 
 impl HittableList {
-    pub fn new(objects: Vec<Rc<dyn Hittable>>) -> Self {
+    pub fn new(objects: Vec<Arc<dyn Hittable>>) -> Self {
         Self { objects }
     }
 
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
     }
 }

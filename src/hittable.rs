@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::material::Material;
 
@@ -9,13 +9,13 @@ use super::{Vec3, dot, Point3};
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material>,
     pub t: f32,
     pub front_face: bool
 }
 
 impl HitRecord {
-    pub fn new(p: Point3, normal: Vec3, material: Rc<dyn Material>, t: f32, front_face: bool) -> Self {
+    pub fn new(p: Point3, normal: Vec3, material: Arc<dyn Material>, t: f32, front_face: bool) -> Self {
         Self { p, normal, material, t, front_face }
     }
 

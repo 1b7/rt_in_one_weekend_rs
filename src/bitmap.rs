@@ -12,6 +12,10 @@ impl Bitmap {
         self.data.push(rgb);
     }
 
+    pub fn push_slice(&mut self, pixels: &[[u8; 3]]) {
+        self.data.extend(pixels)
+    }
+
     fn generate_header(&self, img_size: i32, img_width: i32, img_height: i32) -> [u8; 54] {
         let s = img_size.to_le_bytes();
         let w = img_width.to_le_bytes();
