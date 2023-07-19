@@ -3,6 +3,7 @@ mod camera;
 mod colour;
 mod hittable;
 mod hittable_list;
+mod material;
 mod ray;
 mod sphere;
 mod util;
@@ -16,6 +17,7 @@ use camera::Camera;
 use colour::*;
 use hittable::Hittable;
 use hittable_list::HittableList;
+use material::*;
 use ray::*;
 use sphere::Sphere;
 use util::*;
@@ -24,9 +26,10 @@ use vec3::*;
 fn ray_colour(r: &Ray, world: &impl Hittable, depth: usize) -> Colour {
     if depth == 0 { return Colour::new(0.0, 0.0, 0.0) }
 
-    if let Some(hit_rec) = world.hit(r, 0.001, f32::INFINITY) {
-        let target = hit_rec.p + hit_rec.normal + random_unit_vector();
-        return 0.5 * ray_colour(&Ray::new(hit_rec.p, target - hit_rec.p), world, depth - 1)
+    if let Some(hit_record) = world.hit(r, 0.001, f32::INFINITY) {
+        return if let Some((scattered, attenuation)) = hit_record.material.scatter(r, &hit_record) {
+             attenuation * ray_colour(&scattered, world, depth - 1)
+        } else { Colour::default() }
     }
 
     let unit_direction = unit_vector(&r.direction());
@@ -49,8 +52,19 @@ fn main() {
     let mut bmp = Bitmap::new(vec![], image_width);
 
     // World
-    let mut world = HittableList::new(Rc::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Rc::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)));
+
+    let mat_ground = Rc::new(Lambertian::new(Colour::new(0.8, 0.8, 0.1)));
+    let mat_centre = Rc::new(Lambertian::new(Colour::new(0.1, 0.2, 0.5)));
+    let mat_left   = Rc::new(Dielectric::new(1.5));
+    let mat_right  = Rc::new(     Metal::new(Colour::new(0.8, 0.6, 0.2), 0.0));
+
+    let world = HittableList::new(vec![
+        Rc::new(Sphere::new(Point3::new( 0.0, -100.5, -1.0), 100.0, mat_ground)),
+        Rc::new(Sphere::new(Point3::new( 0.0,    0.0, -1.0),   0.5, mat_centre)),
+        Rc::new(Sphere::new(Point3::new(-1.0,    0.0, -1.0),   0.5, mat_left.clone())),
+        Rc::new(Sphere::new(Point3::new(-1.0,    0.0, -1.0),  -0.4, mat_left)),
+        Rc::new(Sphere::new(Point3::new( 1.0,    0.0, -1.0),   0.5, mat_right))
+    ]);
 
     // Camera
     let cam = Camera::new();

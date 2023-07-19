@@ -24,6 +24,11 @@ impl Vec3 {
     pub fn random(min: f32, max: f32) -> Self {
         Vec3::new(random_double(min, max), random_double(min, max), random_double(min, max))
     }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        self[0] < s && self[1] < s && self[2] < s
+    }
 }
 
 /* Implementations of Operators */
@@ -142,4 +147,15 @@ pub fn random_in_unit_sphere() -> Vec3 {
 
 pub fn random_unit_vector() -> Vec3 {
     unit_vector(&random_in_unit_sphere())
+}
+
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - 2.0 * dot(&v, &n) * n
+}
+
+pub fn refract(uv: Vec3, n: Vec3, etai_over_etat: f32) -> Vec3 {
+    let cos_theta = dot(&(-uv), &n).min(1.0);
+    let r_out_perp = etai_over_etat * (uv + cos_theta * n);
+    let r_out_parallel = -((1.0 - r_out_perp.length_squared()).abs().sqrt()) * n;
+    r_out_parallel + r_out_perp
 }

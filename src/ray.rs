@@ -1,6 +1,7 @@
 // mod vec3;
 use super::vec3::*;
 
+#[derive(Default)]
 pub struct Ray {
     orig: Point3,
     dir: Vec3
