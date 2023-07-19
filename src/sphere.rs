@@ -8,12 +8,12 @@ use crate::ray::Ray;
 pub struct Sphere {
     centre: Point3,
     radius: f32,
-    material: Arc<dyn Material>
+    material: Arc<dyn Material + Sync + Send>
 }
 
 
 impl Sphere {
-    pub fn new(centre: Point3, radius: f32, material: Arc<dyn Material>) -> Self {
+    pub fn new(centre: Point3, radius: f32, material: Arc<dyn Material + Sync + Send>) -> Self {
         Self { centre, radius, material }
     } 
 }

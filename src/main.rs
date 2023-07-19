@@ -13,6 +13,8 @@ use std::{env::args, io::Write};
 use std::time::Instant;
 use std::sync::Arc;
 
+use rayon::prelude::*;
+
 use bitmap::*;
 use camera::Camera;
 use colour::*;
@@ -40,7 +42,7 @@ fn ray_colour(r: &Ray, world: &Arc<HittableList>, depth: usize) -> Colour {
 
 
 fn random_scene() -> HittableList {
-    fn sphere(x: f32, y: f32, z: f32, r: f32, m: Arc<dyn Material>) -> Sphere {
+    fn sphere(x: f32, y: f32, z: f32, r: f32, m: Arc<dyn Material + Sync + Send>) -> Sphere {
         Sphere::new(Point3::new(x, y, z), r, m)
     }
 
@@ -56,7 +58,7 @@ fn random_scene() -> HittableList {
             let centre = Point3::new(a + 0.9 * random_double(0.0, 1.0), 0.2, b + 0.9 * random_double(0.0, 1.0));
 
             if (centre - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let sphere_material: Arc<dyn Material>;
+                let sphere_material: Arc<dyn Material + Send + Sync>;
 
                 if choose_mat < 0.8 {
                     let albedo = Colour::random(0.0, 1.0) * Colour::random(0.0, 1.0);
@@ -129,7 +131,7 @@ fn main() {
     for j in (0..image_height).rev() {
         print!("\rRendering Scanline {} of {} {}", image_height - j, image_height, throbber(j as usize));
         let _ = std::io::stdout().flush();
-        let pixels = (0..image_width).map(|i|  {
+        let pixels = (0..image_width).into_par_iter().map(|i| {
             let mut pixel_colour = Colour::default();
             for _ in 0..samples_per_pixel {
                 let u = (i as f32 + random_double(0.0, 1.0)) / (image_width - 1) as f32;
@@ -137,7 +139,6 @@ fn main() {
                 let r = cam.get_ray(u, v);
                 pixel_colour += ray_colour(&r, &world, max_depth);
             }
-
            col_as_rgb(&pixel_colour, samples_per_pixel)
         }).collect::<Vec<_>>();
         bmp.push_slice(&pixels)
