@@ -107,9 +107,9 @@ fn main() {
     } else { panic!("Must provide a path for output.") };
 
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 400;
+    let image_width = 1200;
     let image_height = (image_width as f32 / aspect_ratio) as i32;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 500;
     let max_depth = 50;
 
     let mut bmp = Bitmap::new(vec![], image_width);
