@@ -14,7 +14,7 @@ use std::rc::Rc;
 use bitmap::*;
 use camera::Camera;
 use colour::*;
-use hittable::{HitRecord, Hittable};
+use hittable::Hittable;
 use hittable_list::HittableList;
 use ray::*;
 use sphere::Sphere;
@@ -22,14 +22,13 @@ use util::*;
 use vec3::*;
 
 fn ray_colour(r: &Ray, world: &impl Hittable, depth: usize) -> Colour {
-    let mut rec = HitRecord::default();
-
     if depth == 0 { return Colour::new(0.0, 0.0, 0.0) }
 
-    if world.hit(r, 0.001, f32::INFINITY, &mut rec) {
-        let target = rec.p + rec.normal + random_unit_vector();
-        return 0.5 * ray_colour(&Ray::new(rec.p, target - rec.p), world, depth - 1)
+    if let Some(hit_rec) = world.hit(r, 0.001, f32::INFINITY) {
+        let target = hit_rec.p + hit_rec.normal + random_unit_vector();
+        return 0.5 * ray_colour(&Ray::new(hit_rec.p, target - hit_rec.p), world, depth - 1)
     }
+
     let unit_direction = unit_vector(&r.direction());
     let t = 0.5 * (unit_direction.y() + 1.0);
     (1.0 - t) * Colour::new(1.0, 1.0, 1.0) + t * Colour::new(0.5, 0.7, 1.0)
