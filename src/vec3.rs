@@ -16,7 +16,6 @@ impl Vec3 {
     pub fn y(&self) -> f32 { self[1] }
     pub fn z(&self) -> f32 { self[2] }
 
-
     pub fn length(&self) -> f32 { self.length_squared().sqrt() }
     pub fn length_squared(&self) -> f32 {
         self[0] * self[0] + self[1] * self[1] + self[2] * self[2]
@@ -139,4 +138,8 @@ pub fn random_in_unit_sphere() -> Vec3 {
         let p = Vec3::random(-1.0, 1.0);
         if p.length_squared() < 1.0 { return p; }
     }
+}
+
+pub fn random_unit_vector() -> Vec3 {
+    unit_vector(&random_in_unit_sphere())
 }

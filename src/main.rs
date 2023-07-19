@@ -8,7 +8,7 @@ mod sphere;
 mod util;
 mod vec3;
 
-use std::env::args;
+use std::{env::args, io::Write};
 use std::rc::Rc;
 
 use bitmap::*;
@@ -26,8 +26,8 @@ fn ray_colour(r: &Ray, world: &impl Hittable, depth: usize) -> Colour {
 
     if depth == 0 { return Colour::new(0.0, 0.0, 0.0) }
 
-    if world.hit(r, 0.0, f32::INFINITY, &mut rec) {
-        let target = rec.p + rec.normal + random_in_unit_sphere();
+    if world.hit(r, 0.001, f32::INFINITY, &mut rec) {
+        let target = rec.p + rec.normal + random_unit_vector();
         return 0.5 * ray_colour(&Ray::new(rec.p, target - rec.p), world, depth - 1)
     }
     let unit_direction = unit_vector(&r.direction());
@@ -58,7 +58,8 @@ fn main() {
 
     // Render
     for j in (0..image_height).rev() {
-        eprint!("\rRendering Scanline {} of {} {}", image_height - j, image_height, throbber(j as usize));
+        print!("\rRendering Scanline {} of {} {}", image_height - j, image_height, throbber(j as usize));
+        let _ = std::io::stdout().flush();
         for i in 0..image_width {
             let mut pixel_colour = Colour::default();
             for _ in 0..samples_per_pixel {
@@ -71,11 +72,11 @@ fn main() {
             bmp.push_pixel(col_as_rgb(&pixel_colour, samples_per_pixel));
         }
     }
+    println!("Done!");
 
-    eprintln!("Done!");
-    
+    print!("Writing Image... ");
     let out_file = std::fs::File::create(&file_path).unwrap();
     bmp.output(out_file).unwrap();
-
-    eprintln!("Image written to: {}", file_path);
+    println!("Done!");
+    println!("Image written to: {}", file_path);
 }
