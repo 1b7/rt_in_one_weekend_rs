@@ -1,9 +1,7 @@
 // This is known as rtweekend.h in the text.
 
-pub const PI: f32 = 3.1415926535897932385;
-
 pub fn degrees_to_radians(deg: f32) -> f32 {
-    deg * PI / 180.0
+    deg * std::f32::consts::PI / 180.0
 }
 
 /// Returns a random double in the range from `min` up to, but **not including**, `max`.

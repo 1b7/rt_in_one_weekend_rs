@@ -1,4 +1,4 @@
-use crate::{Vec3, Point3, ray::Ray};
+use crate::{Vec3, Point3, ray::Ray, util::degrees_to_radians, vec3::{unit_vector, cross}};
 
 pub struct Camera {
     origin: Point3,
@@ -8,22 +8,24 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Self {
-        let aspect_ratio = 16.0 / 9.0;
-        let viewport_height = 2.0;
+    pub fn new(look_from: Point3, look_at: Point3, vup: Vec3, vertical_fov: f32, aspect_ratio: f32) -> Self {
+        let theta = degrees_to_radians(vertical_fov);
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;
-        let focal_length = 1.0;
 
-        let llc = Point3::new(0.0, 0.0, 0.0) 
-            - Vec3::new(viewport_width, 0.0, 0.0) / 2.0 
-            - Vec3::new(0.0, viewport_height, 0.0) / 2.0 
-            - Vec3::new(0.0, 0.0, focal_length);
-    
+        let w = unit_vector(&(look_from - look_at));
+        let u = unit_vector(&cross(&vup, &w));
+        let v = cross(&w, &u);
+        
+        let horizontal = viewport_width * u;
+        let vertical = viewport_height * v;
+
         Self {
-            origin: Point3::new(0.0, 0.0, 0.0),
-            horizontal: Vec3::new(viewport_width, 0.0, 0.0),
-            vertical: Vec3::new(0.0, viewport_height, 0.0),
-            lower_left_corner: llc
+            origin: look_from,
+            horizontal,
+            vertical,
+            lower_left_corner: look_from - horizontal/2.0 - vertical / 2.0 - w
         }
     }
 

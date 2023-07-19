@@ -52,7 +52,6 @@ fn main() {
     let mut bmp = Bitmap::new(vec![], image_width);
 
     // World
-
     let mat_ground = Rc::new(Lambertian::new(Colour::new(0.8, 0.8, 0.1)));
     let mat_centre = Rc::new(Lambertian::new(Colour::new(0.1, 0.2, 0.5)));
     let mat_left   = Rc::new(Dielectric::new(1.5));
@@ -62,12 +61,12 @@ fn main() {
         Rc::new(Sphere::new(Point3::new( 0.0, -100.5, -1.0), 100.0, mat_ground)),
         Rc::new(Sphere::new(Point3::new( 0.0,    0.0, -1.0),   0.5, mat_centre)),
         Rc::new(Sphere::new(Point3::new(-1.0,    0.0, -1.0),   0.5, mat_left.clone())),
-        Rc::new(Sphere::new(Point3::new(-1.0,    0.0, -1.0),  -0.4, mat_left)),
+        Rc::new(Sphere::new(Point3::new(-1.0,    0.0, -1.0), -0.45, mat_left)),
         Rc::new(Sphere::new(Point3::new( 1.0,    0.0, -1.0),   0.5, mat_right))
     ]);
 
     // Camera
-    let cam = Camera::new();
+    let cam = Camera::new(Point3::new(0.0, 0.0, 1.0), Point3::new(0.0, 0.0, -1.0), Vec3::new(0.0, 1.0, 0.0), 70.0, aspect_ratio);
 
     // Render
     for j in (0..image_height).rev() {
