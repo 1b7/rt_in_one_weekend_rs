@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{hittable_list::HittableList, material::*, sphere::Sphere, triangle::Triangle, vec3::{Point3, Colour}, util::random_double};
+use crate::{hittable_list::HittableList, material::*, sphere::Sphere, triangle::Triangle, vec3::{Point3, Colour}, util::random_double, stl::import};
 
 
 pub fn random_scene() -> HittableList {
@@ -221,4 +221,37 @@ pub fn basic_scene_tri() -> HittableList {
         ),
 
     ])
+}
+
+pub fn custom_model(file_path: &str) -> HittableList {
+    let raw_tris = import(file_path).unwrap();
+
+    let mat_model = Arc::new(Metal::new(Colour::new(0.8, 0.2, 0.2), 0.01)); 
+    let mat_ground = Arc::new(Metal::new(Colour::new(0.6, 0.6, 0.6), 0.05));
+
+    let mut world = HittableList::new(vec![]);
+    raw_tris.into_iter().for_each(|tri| world.add(
+        Arc::new(Triangle::new(tri[0], tri[1], tri[2], mat_model.clone()))
+    ));
+
+    // Add a ground plane:
+    world.add(
+        Arc::new(Triangle::new(
+            Point3::new( -100000.0,  10000.000000, 0.0),
+            Point3::new( -100000.0, -10000.000000, 0.0),
+            Point3::new(  100000.0, -10000.000000, 0.0),
+            mat_ground.clone()
+        ))
+    );
+    
+    world.add(
+        Arc::new(Triangle::new(
+            Point3::new( -100000.0,  10000.000000, 0.0),
+            Point3::new(  100000.0, -10000.000000, 0.0),
+            Point3::new(  100000.0,  10000.000000, 0.0),
+            mat_ground.clone()
+        ))
+    );
+    
+    world
 }

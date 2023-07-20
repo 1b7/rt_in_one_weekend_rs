@@ -12,9 +12,8 @@ impl HittableList {
         Self { objects }
     }
 
-    pub fn add(&mut self, object: Arc<dyn Hittable>) {
-        self.objects.push(object);
-    }
+    pub fn add(&mut self, object: Arc<dyn Hittable>) { self.objects.push(object); }
+    pub fn len(&self) -> usize { self.objects.len() }
 }
 
 impl Hittable for HittableList {
