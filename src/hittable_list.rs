@@ -4,15 +4,15 @@ use crate::hittable::*;
 
 #[derive(Clone)]
 pub struct HittableList {
-    objects: Vec<Arc<dyn Hittable + Send + Sync>>
+    objects: Vec<Arc<dyn Hittable>>
 }
 
 impl HittableList {
-    pub fn new(objects: Vec<Arc<dyn Hittable + Send + Sync>>) -> Self {
+    pub fn new(objects: Vec<Arc<dyn Hittable>>) -> Self {
         Self { objects }
     }
 
-    pub fn add(&mut self, object: Arc<dyn Hittable + Send + Sync>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
     }
 }
