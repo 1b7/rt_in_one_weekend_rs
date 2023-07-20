@@ -1,5 +1,7 @@
 // This is known as rtweekend.h in the text.
 
+use crate::vec3::Colour;
+
 pub fn degrees_to_radians(deg: f32) -> f32 {
     deg * std::f32::consts::PI / 180.0
 }
@@ -19,4 +21,10 @@ pub fn throbber(x: usize) -> &'static str {
         5 => "   ",
         _ => unreachable!()
     }
+}
+
+pub fn col_as_rgb(col: &Colour, samples_per_pixel: usize) -> [u8; 3] {
+    let scale = 1.0 / samples_per_pixel as f32;
+    [col.x(), col.y(), col.z()]
+        .map(|x| ((x * scale).sqrt().clamp(0.0, 0.999) * 256.0) as u8)
 }
